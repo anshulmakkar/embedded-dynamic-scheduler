@@ -1,18 +1,16 @@
 #ifndef TASK_MANAGER_H
 #define TASK_MANAGER_H
 
-#include <task.h>
+#include <FreeRTOS.h>
 
-#include "elf.h"
 #include "tree.h"
-#include "queue.h"
+#include "custom_queue.h"
 #include "logger.h"
 
 #define TASK_ACQUIRE_TR_LOCK() do { } while(0)
 #define TASK_RELEASE_TR_LOCK() do { } while(0)
 
-typedef LIST_HEAD(task_section_list_t, task_section_cons_t)
-    task_section_list;
+typedef LIST_HEAD(task_section_list_t, task_section_cons_t) task_section_list;
 typedef void (*entry_ptr_t) (void *);
 #define APPLICATION_TASK_PRIORITY 2
 

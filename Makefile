@@ -33,12 +33,14 @@ BUILD_DIR = build
 
 ######################################
 # source
+#Core/Src/main.c \
+#Core/Src/logger.c \
+#System/task_manager.c 
 ######################################
 # C sources
 C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/logger.c \
-System/task_manager.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
@@ -66,8 +68,8 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
-Core/Src/system_stm32h7xx.c \
 Core/Src/freertos.c \
+Core/Src/system_stm32h7xx.c \
 Core/Src/stm32h7xx_hal_timebase_tim.c \
 Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
 Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
@@ -136,16 +138,14 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
--ISystem/include \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
 -IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
 -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
--IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-
-
+-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
+-ISystem/include 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 

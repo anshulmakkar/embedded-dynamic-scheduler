@@ -6,11 +6,11 @@
 #include <semphr.h>
 #include <string.h>
 
-#include "app_config.h"
 #include "system.h"
-#include "print.h"
+#include "migrator.h"
 
 xTaskHandle      migrator_task_handle;
+#define RTU_DATA_SECTION_NAME ".rtu_data"
 
 int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 {
@@ -30,7 +30,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	if (!task_alloc(new_trc))
 	{
 		vDirectPrintMsg("Failed to allocate task");
-		return ERROR_TASK_ALLOC;
+        return ERROR_TASK_ALLOC;
 	}
 	/* link new software */
 	if (!task_link(new_trc))
@@ -42,14 +42,46 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	new_trc->request_hook = task_find_request_hook(new_trc);
 	if (new_trc->request_hook == NULL) {
 	    vDirectPrintMsg("could not find checkpoint request hook durint RTU");
-	    return ERROR_TA;
+	    return ERROR_TASK_ALLOC;
 	}
+
+	/* find rtu_data section */
+	Elf32_Half old_rtu_ndx = find_section_index(RTU_DATA_SECTION_NAME, trc->elfh);
+	Elf32_Half new_rtu_ndx = find_section_index(RTU_DATA_SECTION_NAME, new_trc->elfh);
+	Elf32_Shdr *old_rtu = find_section(RTU_DATA_SECTION_NAME, trc->elfh);
+	Elf32_Shdr *new_rtu = find_section(RTU_DATA_SECTION_NAME, new_trc->elfh);
+
+	if (old_rtu_ndx == 0 || new_rtu_ndx == 0 ||
+	    old_rtu == NULL || new_rtu == NULL)
+	{
+	    vDirectPrintMsg("faile dto find the rtu data section");
+	    return ERROR_RTU_SECTION_NOT_FOUND;
+	}
+
+	void *old_rtu_mem = task_get_section_address(trc, old_rtu_ndx);
+	void *new_rtu_mem = task_get_section_address(new_trc, new_rtu_ndx);
+	if (old_rtu_mem == NULL || new_rtu_mem == NULL)
+    {
+        vDirectPrintMsg("faile dto find the rtu data section address");
+        return ERROR_RTU_SECTION_NOT_FOUND;
+    }
+
+	/*
+     * Copy the .rtu_data section from the old to the new
+     * software. We should here somewhere run the transformation
+     * function too.
+     */
+	memcpy((void *)new_rtu_mem, (void *)old_rtu_mem, old_rtu->sh_size);
+
 
 	/* start new task */
 	if (!task_start(new_trc))
 	{
 		vDirectPrintMsg("Failed to start task \n");
 	}
+	vTaskDelete(trc->task_handle);
+	task_free(trc);
+	return ERROR_SUCCESS;
 }
 
 int migrator_task_loop()
@@ -88,7 +120,7 @@ void migrator_task_start()
 {
 	if(xTaskCreate(migrator_task, (const char *)"migrator_task",
 			configMINIMAL_STACK_SIZE, NULL,
-			PRIOR_FIX_FREQ_PERIODIC,migrator_task_handle) != pdPASS)
+			2,migrator_task_handle) != pdPASS)
 	{
 		vDirectPrintMsg("Failed to create migrator task");
 		return 0;

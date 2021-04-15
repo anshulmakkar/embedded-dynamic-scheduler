@@ -38,6 +38,9 @@
 
 extern u_int8_t _simple_elf_start;
 extern u_int8_t _simple_elf_end;
+extern u_int8_t _simple_v1_start;
+extern u_int8_t _simple_v1_end;
+
 //extern u_int8_t _binary_obj_app_image_elf_start;
 //extern u_int8_t _binary_obj_app_image_elf_end;
 

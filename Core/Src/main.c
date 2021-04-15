@@ -20,12 +20,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
+#include "FreeRTOS.h"
 #include "cmsis_os.h"
 #include "elf.h"
 #include "applications.h"
-#include "task_manager.h"
 #include "logger.h"
-#include "migrator.h"
+#include "task_manager.h"
+//#include "logger.h"
+//#include "migrator.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -93,7 +95,7 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ETH_Init(void);
-static void MX_USART3_UART_Init(void);
+//static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
 
@@ -156,7 +158,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 int main(void)
 {
     /* USER CODE BEGIN 1 */
-    entry_ptr_t entry_point = NULL;
+    //entry_ptr_t entry_point = NULL;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -214,8 +216,8 @@ int main(void)
     /* Create the thread(s) */
     /* creation of defaultTask */
     defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-    Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
 
+    Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
     task_register_cons * simplec = task_register("simple", simple_elfh);
     if (!task_alloc(simplec))
     {
@@ -232,10 +234,10 @@ int main(void)
         vDirectPrintMsg("Failed to start task \n");
     }
 
-    if (!migrator_stask_tart())
-    {
-        vDirectPrintMsg("Failed to start the migrator");
-    }
+    //if (!migrator_stask_tart())
+    //{
+    //    vDirectPrintMsg("Failed to start the migrator");
+   // }
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */
@@ -243,7 +245,6 @@ int main(void)
     /* USER CODE BEGIN RTOS_EVENTS */
     /* add events, ... */
     /* USER CODE END RTOS_EVENTS */
-
     /* Start scheduler */
     osKernelStart();
 
