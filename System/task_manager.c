@@ -283,7 +283,7 @@ request_hook_fn_t task_find_request_hook(task_register_cons *trc)
 	{
 		ret = (request_hook_fn_t)((u_int32_t)trc->cont_mem +
 				(u_int32_t)request_hook_symbol->st_value);
-		vDirectPrntMsg("found request hook symbol");
+		vDirectPrintMsg("found request hook symbol");
 	}
 	return ret;
 }

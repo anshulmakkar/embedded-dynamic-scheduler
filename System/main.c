@@ -130,7 +130,7 @@ void main()
     uart_print("print without uart initialization \n");
     /* And finally create two tasks: */
     if ( pdPASS != xTaskCreate((pdTASK_CODE)entry_point, "task1", 128, (void*) &tParam[0],
-                                 PRIOR_PERIODIC, NULL) )
+                                 2, NULL) )
     {
     	FreeRTOS_Error("Could not create task1\r\n");
     }

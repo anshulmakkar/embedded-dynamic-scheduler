@@ -20,7 +20,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
+
 #include "FreeRTOS.h"
+
 #include "cmsis_os.h"
 #include "elf.h"
 #include "applications.h"

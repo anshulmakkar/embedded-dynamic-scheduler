@@ -14,6 +14,8 @@
 # target
 ######################################
 TARGET = kispe-dynlink
+TARGET_APP = app_image
+#TARGET_DMP = app_image.ld
 
 
 ######################################
@@ -30,6 +32,7 @@ OPT = -Og
 #######################################
 # Build path
 BUILD_DIR = build
+APP_DIR = App
 
 ######################################
 # source
@@ -38,9 +41,14 @@ BUILD_DIR = build
 #System/task_manager.c 
 ######################################
 # C sources
+
+C_APP_SOURCES = \
+App/simple.c
+
 C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/logger.c \
+System/task_manager.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
@@ -86,6 +94,9 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 ASM_SOURCES =  \
 startup_stm32h753xx.s
 
+ASM_APP_SOURCES = \
+App/startup_app.s
+
 
 #######################################
 # binaries
@@ -106,6 +117,7 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
+HXDMP = hexdump -v -e '"BYTE(0x" 1/1 "%02X" ")\n"' 
  
 #######################################
 # CFLAGS
@@ -165,18 +177,19 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 #######################################
 # link script
 LDSCRIPT = STM32H753ZITx_FLASH.ld
+LDSCRIPT_APP = app.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS_APP = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APP) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
-
 #######################################
-# build the application
+# build the the main system binary
 #######################################
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
@@ -194,16 +207,53 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
+	
+$(BUILD_DIR)/$(TARGET_APP).elf:  $(APP_OBJECTS) Makefile
+	$(CC) $(APP_OBJECTS) $(LDFLAGS_APP) -o $@
+	$(SZ) $@
+
+$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(HEX) $< $@
+	
+$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(BIN) $< $@
+	
+$(BUILD_DIR):
+	mkdir $@	
+
+app: $(BUILD_DIR)/$(TARGET_APP).elf $(BUILD_DIR)/$(TARGET_APP).hex $(BUILD_DIR)/$(TARGET_APP).bin
+
+#######################################
+# build the the application binary.
+#######################################
+# list of app objects.
+APP_OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_APP_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_APP_SOURCES)))
+
+# list of ASM program objects
+APP_OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_APP_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_APP_SOURCES)))
+
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	
+$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
+	$(AS) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/$(TARGET_APP).elf:  $(APP_OBJECTS) Makefile
+	$(CC) $(APP_OBJECTS) $(LDFLAGS_APP) -o $@
+	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
 	
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
-	
-$(BUILD_DIR):
-	mkdir $@		
 
+$(BUILD_DIR)/$(TARGET_APP).ld: $(TARGET_APP).elf
+	$(HEXDMP) $< > $@	
+
+	
 #######################################
 # clean up
 #######################################

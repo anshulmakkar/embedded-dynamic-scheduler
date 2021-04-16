@@ -19,5 +19,6 @@
 void uart_print(UART_HandleTypeDef *uart, const char* str);
 
 void vDirectPrintMsg(const char* msg);
+void MX_USART3_UART_Init(void);
 
 #endif

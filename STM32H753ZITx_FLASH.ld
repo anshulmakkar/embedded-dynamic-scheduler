@@ -149,6 +149,10 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >DTCMRAM AT> FLASH
 
+  .applications :
+  {
+    INCLUDE "System/applications.ld"
+  }
   
   /* Uninitialized data section */
   . = ALIGN(4);

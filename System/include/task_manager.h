@@ -6,6 +6,7 @@
 #include "tree.h"
 #include "custom_queue.h"
 #include "logger.h"
+#include "elf.h"
 
 #define TASK_ACQUIRE_TR_LOCK() do { } while(0)
 #define TASK_RELEASE_TR_LOCK() do { } while(0)

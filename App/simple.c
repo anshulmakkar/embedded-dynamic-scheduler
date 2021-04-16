@@ -77,7 +77,7 @@ void simple_entry(void *param)
         if (rtu_requested)
         {
             rtu_requested = 0;
-            vTaskSuspend();
+            //vTaskSuspend();
         }
 
     	vTaskDelay(1000);
