@@ -95,7 +95,7 @@ ASM_SOURCES =  \
 startup_stm32h753xx.s
 
 ASM_APP_SOURCES = \
-App/startup_app.s
+$(APP_DIR)/startup_app.s
 
 
 #######################################
@@ -141,7 +141,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32H753xx
+-DSTM32H753xx \
+-DDEBUG
 
 
 # AS includes
@@ -183,7 +184,7 @@ LDSCRIPT_APP = app.ld
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-LDFLAGS_APP = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APP) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP).map,--cref -Wl,--gc-sections
+LDFLAGS_APP = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APP) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP).map,--cref -Wl,--gc-sections -nostartfiles -fPIC -shared
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -208,10 +209,6 @@ $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 	
-$(BUILD_DIR)/$(TARGET_APP).elf:  $(APP_OBJECTS) Makefile
-	$(CC) $(APP_OBJECTS) $(LDFLAGS_APP) -o $@
-	$(SZ) $@
-
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@
 	
@@ -221,7 +218,7 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir $@	
 
-app: $(BUILD_DIR)/$(TARGET_APP).elf $(BUILD_DIR)/$(TARGET_APP).hex $(BUILD_DIR)/$(TARGET_APP).bin
+app: $(BUILD_DIR)/$(TARGET_APP).elf $(BUILD_DIR)/$(TARGET_APP).hex $(BUILD_DIR)/$(TARGET_APP).bin $(BUILD_DIR)/$(TARGET_APP).ld 
 
 #######################################
 # build the the application binary.
@@ -250,8 +247,8 @@ $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
 
-$(BUILD_DIR)/$(TARGET_APP).ld: $(TARGET_APP).elf
-	$(HEXDMP) $< > $@	
+$(BUILD_DIR)/%.ld: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(HXDMP) $< > $@	
 
 	
 #######################################

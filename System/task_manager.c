@@ -374,12 +374,16 @@ int task_alloc(task_register_cons *trc)
 
 task_register_cons *task_register(const char *name, Elf32_Ehdr *elfh)
 {
+    vDirectPrintMsg("tasks registered called:");
+    vDirectPrintMsg("registered called123:");
     struct task_register_cons_t *trc = 
         (task_register_cons *)SYSTEM_MALLOC_CALL(sizeof(task_register_cons));
     if (trc == NULL)
     {
+        vDirectPrintMsg("Failed to allo in task register:");
         return NULL;
     }
+    vDirectPrintMsg("alloc_done");
     trc->name = name;
     trc->elfh = elfh;
     trc->task_handle = 0;
@@ -391,10 +395,10 @@ task_register_cons *task_register(const char *name, Elf32_Ehdr *elfh)
     //trc->request_hook = NULL;
     trc->cont_mem = NULL;
     trc->cont_mem_size = 0;
-
+    vDirectPrintMsg("task_Reg: list inti");
     LIST_INIT(&trc->sections);
     //vDirectPrintMsg("tasks registered: %i \n", get_number_of_tasks());
-    vDirectPrintMsg("tasks registered: \n");
+    vDirectPrintMsg("tasks registered end");
 
     return trc;
 }

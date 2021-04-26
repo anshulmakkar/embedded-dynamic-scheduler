@@ -113,11 +113,33 @@ int len;
 
 uint8_t indx, rx_data[2], rx_buffer[100], tx_done;
 
+void uartt_print(UART_HandleTypeDef *uart, const char* str)
+{
+    /*
+      if NULL is passed, avoid possible problems with dereferencing of NULL
+      and print this string:
+     */
+    const char* null_str = "<NULL>\r\n";
+    const char* cp;
+
+    /* handle possible NULL value of str: */
+    cp = ( NULL==str ? null_str : (char*) str );
+
+    /*
+     * Just print each character until a zero terminator is detected
+     */
+    for ( ; '\0' != *cp; ++cp )
+    {
+        //__printCh(nr, *cp);
+        HAL_UART_Transmit_IT(uart, (uint8_t*)"*cp", 1);
+    }
+}
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
     /* Turn LED1 on: Transfer in transmission process is correct */
     //BSP_LED_On(LED1);
-    //__NOP();
+    __NOP();
     //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"interrupt", 10);
     //__HAL_UART_ENABLE_IT(&huart3, UART_IT_TC);
 }
@@ -131,6 +153,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+    __NOP();
+#if 0
     uint8_t i;
     if (huart->Instance == USART3)	//current UART
     {
@@ -150,6 +174,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         //__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
         HAL_UART_Receive_IT(&huart3, rx_data, 1);	//activate UART receive interrupt every time
     }
+#endif
 }
 /* USER CODE END 0 */
 
@@ -189,9 +214,9 @@ int main(void)
     /* USER CODE END 2 */
 
     /* Init scheduler */
-    HAL_UART_Transmit(&huart3, (uint8_t*)"kernel intialize\r\n", 16, 1000);
-    osKernelInitialize();
-    HAL_UART_Transmit(&huart3, (uint8_t*)"initialiization complete\r\n", 30, 1000);
+    //HAL_UART_Transmit(&huart3, (uint8_t*)"kernel intialize", 16, 1000);
+    //uartt_print( &huart3, "vDirectMsg");
+    //osKernelInitialize();
 
 
     /* USER CODE BEGIN RTOS_MUTEX */
@@ -209,32 +234,40 @@ int main(void)
     /* USER CODE BEGIN RTOS_QUEUES */
     /* add queues, ... */
     /* USER CODE END RTOS_QUEUES */
-    __HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
-    __HAL_UART_ENABLE_IT(&huart3, UART_IT_TC);
+    //__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
+    //__HAL_UART_ENABLE_IT(&huart3, UART_IT_TC);
 
     /* activate uart rx interrupt avery time receiving 1 byte */
-    HAL_UART_Receive_IT(&huart3, rx_data, 1);
+    //HAL_UART_Receive_IT(&huart3, rx_data, 1);
 
     /* Create the thread(s) */
     /* creation of defaultTask */
-    defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+    //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
     Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
+    //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
+    vDirectPrintMsg("hello to dynamic link");
+    //HAL_Delay(1000);
+
     task_register_cons * simplec = task_register("simple", simple_elfh);
     if (!task_alloc(simplec))
     {
         vDirectPrintMsg("Failed to allocate task");
     }
 
+    vDirectPrintMsg("simple alloc");
     if (!task_link(simplec))
     {
         vDirectPrintMsg("Failed to link task ");
     }
+    vDirectPrintMsg("simple link");
 
     if (!task_start(simplec))
     {
         vDirectPrintMsg("Failed to start task \n");
     }
+    vDirectPrintMsg("simple start");
+
 
     //if (!migrator_stask_tart())
     //{
@@ -248,7 +281,9 @@ int main(void)
     /* add events, ... */
     /* USER CODE END RTOS_EVENTS */
     /* Start scheduler */
-    osKernelStart();
+
+    //osKernelStart();
+    vTaskStartScheduler();
 
     /* We should never get here as control is now taken by the scheduler */
     /* Infinite loop */
@@ -256,7 +291,7 @@ int main(void)
     while (1)
     {
     /* USER CODE END WHILE */
-      HAL_UART_Transmit_IT(&huart3, (uint8_t*)"initcomplete interrupt", 30);
+      //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"initcomplete interrupt", 30);
     /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */

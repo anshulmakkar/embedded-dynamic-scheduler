@@ -10,12 +10,14 @@
  */
 
 #include "logger.h"
-UART_HandleTypeDef huart3;
 /**
   * @brief USART3 Initialization Function
   * @param None
   * @retval None
   */
+
+extern UART_HandleTypeDef huart3;
+
 void MX_USART3_UART_Init(void)
 {
 
@@ -27,7 +29,7 @@ void MX_USART3_UART_Init(void)
 
     /* USER CODE END USART3_Init 1 */
     huart3.Instance = USART3;
-    huart3.Init.BaudRate = 115200;
+    huart3.Init.BaudRate = 9600;
     huart3.Init.WordLength = UART_WORDLENGTH_8B;
     huart3.Init.StopBits = UART_STOPBITS_1;
     huart3.Init.Parity = UART_PARITY_NONE;
@@ -85,6 +87,15 @@ void vDirectPrintMsg(const char* msg)
 {
     if ( NULL != msg )
     {
-        uart_print(&huart3, msg);
+        //uart_print(&huart3, msg);
+        //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
+        for ( ; '\0' != *msg; ++msg )
+        {
+            //__printCh(nr, *cp);
+            //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
+            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
+            HAL_Delay(10);
+        }
+
     }
 }
