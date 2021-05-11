@@ -12,6 +12,6 @@ int migrator_task_loop();
 
 void migrator_task();
 
-void migrator_task_start();
+int migrator_task_start();
 
 #endif

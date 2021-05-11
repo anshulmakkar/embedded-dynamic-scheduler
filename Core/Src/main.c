@@ -29,7 +29,7 @@
 #include "logger.h"
 #include "task_manager.h"
 //#include "logger.h"
-//#include "migrator.h"
+#include "migrator.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -100,7 +100,8 @@ static void MX_ETH_Init(void);
 //static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
-
+uint8_t simple_elf_v1[6000];
+task_register_cons * simplec = NULL;
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -186,6 +187,8 @@ int main(void)
 {
     /* USER CODE BEGIN 1 */
     //entry_ptr_t entry_point = NULL;
+    int i = 0;
+    int j = 0;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -244,35 +247,88 @@ int main(void)
     /* creation of defaultTask */
     //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-    Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
+    //Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
+    volatile void *simple_elfh = APPLICATION_ELF(simple);
+    uint8_t simple_elf_tmp[21000];
+    Elf32_Ehdr *elfh = (void *)(simple_elf_tmp);
     //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
-    vDirectPrintMsg("hello to dynamic link");
+    //vDirectPrintMsg("hello to dynamic link\n");
+    HAL_UART_Receive(&huart3, simple_elf_tmp, 20000, 30000);
+
+    /*while (simple_elf_tmp[i] != '0' && simple_elf_tmp[i+1] != 'x')
+    {
+        i++;
+    }*/
+    i = 0;
+#if 0
+    for (j = 0; i < 20000;)
+    {
+        uint8_t tmp1 = simple_elf_tmp[i];
+        uint8_t tmp2 = simple_elf_tmp[i+1];
+        /*
+        if (simple_elf_tmp[i] == '0' && simple_elf_tmp[i+1] == 'x')
+        {
+            i = i+2;
+            continue;
+        }
+        if (simple_elf_tmp[i] == '\n' || simple_elf_tmp[i] == '\r')
+        {
+            i++;
+            continue;
+        }
+
+        if (tmp1 < '0' || tmp2 < '0')
+        {
+            i = i+1;
+            continue;
+        }*/
+        if (simple_elf_tmp[i] == '\n' || simple_elf_tmp[i] == '\r')
+        {
+            i++;
+            continue;
+        }
+        if (tmp1<='9' &&  tmp1 >= '0')
+            tmp1 = tmp1-'0';
+        else if (tmp1 >= 'A' && tmp1 <= 'E')
+            tmp1 = tmp1-'A'+10;
+
+        if (tmp2<='9' &&  tmp2 >= '0')
+            tmp2= tmp2-'0';
+        else if (tmp2 >= 'A' && tmp2 <= 'E')
+            tmp2 = tmp2-'A'+10;
+
+        tmp1 = tmp1 << 4;
+        tmp2 = tmp2 & 0x0F;
+        simple_elf_v1[j++] = tmp1 | tmp2;
+        i += 2;
+    }
+#endif
     //HAL_Delay(1000);
 
-    task_register_cons * simplec = task_register("simple", simple_elfh);
+    //task_register_cons * simplec = task_register("simple", simple_elfh);
+    simplec = task_register("simple", simple_elfh);
     if (!task_alloc(simplec))
     {
-        vDirectPrintMsg("Failed to allocate task");
+        vDirectPrintMsg("Failed to allocate task\n");
     }
 
-    vDirectPrintMsg("simple alloc");
+
     if (!task_link(simplec))
     {
-        vDirectPrintMsg("Failed to link task ");
+        vDirectPrintMsg("Failed to link task\n");
     }
-    vDirectPrintMsg("simple link");
+
 
     if (!task_start(simplec))
     {
-        vDirectPrintMsg("Failed to start task \n");
+        vDirectPrintMsg("Failed to start task\n");
     }
-    vDirectPrintMsg("simple start");
 
-
-    //if (!migrator_stask_tart())
-    //{
-    //    vDirectPrintMsg("Failed to start the migrator");
-   // }
+    vDirectPrintMsg("Starting Migrator\n");
+    if (!migrator_task_start())
+    {
+        vDirectPrintMsg("Failed to start the migrator");
+    }
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */

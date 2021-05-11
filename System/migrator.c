@@ -11,6 +11,7 @@
 
 xTaskHandle      migrator_task_handle;
 #define RTU_DATA_SECTION_NAME ".rtu_data"
+extern task_register_cons * simplec;
 
 int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 {
@@ -38,7 +39,11 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 		vDirectPrintMsg("Failed to link task ");
 		return 0;
 	}
-
+	if (!task_start(new_trc))
+    {
+        vDirectPrintMsg("Failed to start task \n");
+    }
+#if 0
 	new_trc->request_hook = task_find_request_hook(new_trc);
 	if (new_trc->request_hook == NULL) {
 	    vDirectPrintMsg("could not find checkpoint request hook durint RTU");
@@ -81,43 +86,50 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	}
 	vTaskDelete(trc->task_handle);
 	task_free(trc);
+#endif
 	return ERROR_SUCCESS;
 }
 
 int migrator_task_loop()
 {
-	task_register_cons *trc;
+	task_register_cons *trc = simplec;
+	vDirectPrintMsg("migrator_task_loop\n");
 	while (1)
 	{
 		vTaskDelay(1000/portTICK_RATE_MS);
-		if (( trc = task_find("simple")))
+		//if (( trc = task_find("simple")))
+		if (trc != NULL)
 		{
 			if (!task_wait_for_checkpoint(trc, cp_req_rtu))
 			{
 				vDirectPrintMsg("Failed to reach rtu checkpoint");
 				return 0;
 			}
-			Elf32_Ehdr *updated_sw = (Elf32_Ehdr *)&_simple_v1_start;
+			Elf32_Ehdr *updated_sw = (Elf32_Ehdr *)simple_elf_v1;
 			vDirectPrintMsg("Starting Runtime Update");
 			if (!migrator_runtime_update(trc, updated_sw))
 			{
 				vDirectPrintMsg("Failed to update the software");
 				return 0;
 			}
-			vDirectPrintMsg("Runtime update successful ");
+			vDirectPrintMsg("Runtime update successful");
 		}
+		else
+		    vDirectPrintMsg("migrator_loop not find simple\n");
 
 	}
 }
 void migrator_task()
 {
+    vDirectPrintMsg("migrator_task\n");
 	migrator_task_loop();
 	while (1)
 		vTaskSuspend(NULL);
 }
 
-void migrator_task_start()
+int migrator_task_start()
 {
+    vDirectPrintMsg("migrator_task start\n");
 	if(xTaskCreate(migrator_task, (const char *)"migrator_task",
 			configMINIMAL_STACK_SIZE, NULL,
 			2,migrator_task_handle) != pdPASS)
@@ -125,5 +137,6 @@ void migrator_task_start()
 		vDirectPrintMsg("Failed to create migrator task");
 		return 0;
 	}
+	return 1;
 
 }

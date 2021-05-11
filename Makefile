@@ -15,6 +15,7 @@
 ######################################
 TARGET = kispe-dynlink
 TARGET_APP = app_image
+TARGET_APP_V1 = app_image_v1
 #TARGET_DMP = app_image.ld
 
 
@@ -45,10 +46,14 @@ APP_DIR = App
 C_APP_SOURCES = \
 App/simple.c
 
+C_APP_V1_SOURCES = \
+App/simple_v1.c
+
 C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/logger.c \
 System/task_manager.c \
+System/migrator.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
@@ -97,6 +102,8 @@ startup_stm32h753xx.s
 ASM_APP_SOURCES = \
 $(APP_DIR)/startup_app.s
 
+ASM_APP_V1_SOURCES = \
+$(APP_DIR)/startup_app_v1.s
 
 #######################################
 # binaries
@@ -117,7 +124,8 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
-HXDMP = hexdump -v -e '"BYTE(0x" 1/1 "%02X" ")\n"' 
+HXDMP = hexdump -v -e '"BYTE(0x" 1/1 "%02X" ")\n"'
+#HXDMPV1 = hexdump -v -e '1/1 "%02X"'
  
 #######################################
 # CFLAGS
@@ -249,8 +257,33 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 
 $(BUILD_DIR)/%.ld: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HXDMP) $< > $@	
-
 	
+	
+appv1: $(BUILD_DIR)/$(TARGET_APP_V1).elf $(BUILD_DIR)/$(TARGET_APP_V1).ld 
+ 
+#######################################
+# build the the application binary.
+#######################################
+# list of app objects.
+APP_V1_OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_APP_V1_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_APP_V1_SOURCES)))
+
+APP_V1_OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_APP_V1_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_APP_V1_SOURCES)))
+
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	
+$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
+	$(AS) -c $(CFLAGS) $< -o $@
+	
+$(BUILD_DIR)/$(TARGET_APP_V1).elf:  $(APP_V1_OBJECTS) Makefile
+	$(CC) $(APP_V1_OBJECTS) $(LDFLAGS_APP) -o $@
+	$(SZ) $@
+	
+#$(BUILD_DIR)/%.ld: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+#	$(HXDMPV1) $< > $@		
+
 #######################################
 # clean up
 #######################################

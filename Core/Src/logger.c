@@ -96,6 +96,8 @@ void vDirectPrintMsg(const char* msg)
             HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
             HAL_Delay(10);
         }
+        HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);
+        HAL_Delay(10);
 
     }
 }

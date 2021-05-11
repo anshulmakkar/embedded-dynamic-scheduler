@@ -73,5 +73,8 @@ task_register_cons *task_register(const char *name, Elf32_Ehdr *elfh);
 int task_link(task_register_cons *trc);
 int task_start(task_register_cons *trc);
 Elf32_Sym *find_symbol(char *name, Elf32_Ehdr *elf_h);
+int migrator_task_loop();
+int task_wait_for_checkpoint(task_register_cons *trc, cp_req_t req_type);
+int check_elf_magic(Elf32_Ehdr *hdr);
 
 #endif

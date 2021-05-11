@@ -38,14 +38,17 @@
 
 extern u_int8_t _simple_elf_start;
 extern u_int8_t _simple_elf_end;
-extern u_int8_t _simple_v1_start;
-extern u_int8_t _simple_v1_end;
+extern u_int8_t _simple_v1_elf_start;
+extern u_int8_t _simple_v1_elf_end;
+extern uint8_t simple_elf_v1[6000];
 
 //extern u_int8_t _binary_obj_app_image_elf_start;
 //extern u_int8_t _binary_obj_app_image_elf_end;
 
 #define APPLICATION_ELF(app) ((Elf32_Ehdr *)&_ ## app ## _elf_start)
+#define APPLICATION_ELF_V1(app) ((Elf32_Ehdr *)&_ ## app ## _elf_start)
 
+//#define APPLICATION_ELF(app) ((Elf32_Ehdr *)&_ ## app ## _elf_start)
 #ifdef HAS_SYSTEM_ELF_SYMBOL
 #define SYSTEM_ELF ((Elf32_Ehdr *)&_system_elf_start)
 #else /* HAS_SYSTEM_ELF_SYMBOL */

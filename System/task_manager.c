@@ -13,7 +13,7 @@
 //RB_INITIALIZER(task_register_tree);
 //RB_GENERATE(task_register_tree_t, task_register_cons_t, tasks, task_register_cons_cmp)
 //
-
+extern task_register_cons * simplec;
 int division(int dividend, int divisor)
 {
     int quotient = 1;
@@ -185,7 +185,7 @@ int link_relocations(task_register_cons *app_trc)
 
     if (app_symsect == NULL)
     {
-    	vDirectPrintMsg("could not find the application .symtab section");
+    	vDirectPrintMsg("could not find the .symtab section");
     }
 
     if (strtab_sect == NULL)
@@ -202,7 +202,7 @@ int link_relocations(task_register_cons *app_trc)
     		continue;
     	if (s[i].sh_type == SHT_RELA)
     	{
-    		vDirectPrintMsg("SHT_RELA is not supported");
+    		vDirectPrintMsg("SHT_RELA is not supported\n");
     		return 0;
     	}
     	Elf32_Rel *r = (Elf32_Rel *)((u_int32_t)app_trc->elfh + s[i].sh_offset);
@@ -217,17 +217,17 @@ int link_relocations(task_register_cons *app_trc)
     			case R_ARM_GLOB_DAT:
     			break;
     			case R_ARM_RELATIVE:
-    				vDirectPrintMsg("not handled relatvie");
+    				vDirectPrintMsg("not handled relative\n");
     				continue; //not handled.
     			default:
-    				vDirectPrintMsg("Found not supported relocation type");
+    				vDirectPrintMsg("Found not supported relocation type\n");
     			return 0;
     		}
     		/* 1 find the symbol in the give elf binaries. */
     		app_symbol = &app_symtab[ELF32_R_SYM(r[j].r_info)];
     		if (!find_symbols_in_elfhs(app_symbol, &final_symbol, &symbol_trc, app_trc))
     		{
-    			vDirectPrintMsg("cannot locate the symbol");
+    			vDirectPrintMsg("cannot locate the symbol\n");
     			return 0;
     		}
     		/* find absolute address of the symbol */
@@ -268,6 +268,7 @@ int link_relocations(task_register_cons *app_trc)
     				//vDirectPrintMsg("jump glob address");
     			break;
     			default:
+    			    vDirectPrintMsg("unknown relocation type\n");
     				return 0;
     		}
     	}
@@ -311,7 +312,7 @@ int task_alloc(task_register_cons *trc)
 
     }
     //vDirectPrintMsg("Memory required for task %s :%lu\n", trc->name, alloc_size);
-    vDirectPrintMsg("Memory required for task \n");
+    vDirectPrintMsg("Memory required for task\n");
     
     Elf32_Shdr *section_hdr = (Elf32_Shdr *) ((u_int32_t)trc->elfh + trc->elfh->e_shoff);
     Elf32_Shdr *strtab_sect = &section_hdr[trc->elfh->e_shstrndx];
@@ -350,7 +351,7 @@ int task_alloc(task_register_cons *trc)
             }
             tsc->name = (char *)((u_int32_t)trc->elfh + (u_int32_t)strtab_sect->sh_offset + s[i].sh_name);
             //vDirectPrintMsg("processing allocation for section %s\n", tsc->name);
-            vDirectPrintMsg("processing allocation for section \n");
+            vDirectPrintMsg("processing allocation for section\n");
             tsc->section_index = i;
             tsc->amem = (void *)(cm_addr + s[i].sh_addr);
             LIST_INSERT_HEAD(&trc->sections, tsc, sections);
@@ -374,16 +375,16 @@ int task_alloc(task_register_cons *trc)
 
 task_register_cons *task_register(const char *name, Elf32_Ehdr *elfh)
 {
-    vDirectPrintMsg("tasks registered called:");
-    vDirectPrintMsg("registered called123:");
+    vDirectPrintMsg("tasks registered called:\n");
+
     struct task_register_cons_t *trc = 
         (task_register_cons *)SYSTEM_MALLOC_CALL(sizeof(task_register_cons));
     if (trc == NULL)
     {
-        vDirectPrintMsg("Failed to allo in task register:");
+        vDirectPrintMsg("Failed to allo in task register: \n");
         return NULL;
     }
-    vDirectPrintMsg("alloc_done");
+
     trc->name = name;
     trc->elfh = elfh;
     trc->task_handle = 0;
@@ -395,10 +396,10 @@ task_register_cons *task_register(const char *name, Elf32_Ehdr *elfh)
     //trc->request_hook = NULL;
     trc->cont_mem = NULL;
     trc->cont_mem_size = 0;
-    vDirectPrintMsg("task_Reg: list inti");
+
     LIST_INIT(&trc->sections);
     //vDirectPrintMsg("tasks registered: %i \n", get_number_of_tasks());
-    vDirectPrintMsg("tasks registered end");
+
 
     return trc;
 }
@@ -413,13 +414,13 @@ int task_link(task_register_cons *trc)
 
     if (trc->cont_mem == NULL)
     {
-        vDirectPrintMsg("Continuous memory not available");
+        vDirectPrintMsg("Continuous memory not available\n");
         return 0;
     }
 
     if (!link_relocations(trc))
     {
-        vDirectPrintMsg("relocation failed");
+        vDirectPrintMsg("relocation failed\n");
         return 0;
     }
     return 1;
@@ -434,43 +435,48 @@ int task_start(task_register_cons *trc)
 
 	if (entry_sym == NULL)
 	{
-		vDirectPrintMsg("task start: entry symbol not found");
+		vDirectPrintMsg("task start: entry symbol not found\n");
 		return 0;
 	}
 	entry_point = trc->cont_mem + entry_sym->st_value;
 	if(entry_sym == NULL)
-		vDirectPrintMsg("did not find entry for the task");
+		vDirectPrintMsg("did not find entry for the task\n");
 
 	if((u_int32_t)entry_sym & 0x03)
 	{
-		vDirectPrintMsg("entry point is not 4 byte aligned");
+		vDirectPrintMsg("entry point is not 4 byte aligned\n");
 	}
 
 	if(xTaskCreate((pdTASK_CODE)entry_point, (const char *)trc->name,
 			configMINIMAL_STACK_SIZE, NULL,
 			APPLICATION_TASK_PRIORITY, &trc->task_handle) != pdPASS)
 	{
-		vDirectPrintMsg("could not create task");
+		vDirectPrintMsg("could not create task\n");
 	}
-	//vDirectPrintMsg("tsk started successfully");
+	vDirectPrintMsg("tsk started successfully\n");
 	return 1;
 }
 
 int task_call_crh(task_register_cons *trc, cp_req_t req_type)
 {
+#if 0
 	if (trc->request_hook != NULL)
 	{
 		(trc->request_hook)(req_type);
 	}
+#endif
+
 }
 
 int task_wait_for_checkpoint(task_register_cons *trc, cp_req_t req_type)
 {
+#if 0
 	if (!task_call_crh(trc, req_type))
 	{
 		vDirectPrintMsg("could not call checkpoint request hook");
 		return 0;
 	}
+#endif
 	return 1;
 
 }
