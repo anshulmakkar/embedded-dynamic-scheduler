@@ -457,6 +457,37 @@ int task_start(task_register_cons *trc)
 	return 1;
 }
 
+int task_start_v1(task_register_cons *trc)
+{
+    Elf32_Sym *entry_sym =  NULL;
+    entry_ptr_t entry_point = NULL;
+    entry_sym = find_symbol("_start_v1", trc->elfh);
+    //entry_sym = find_symbol("simple_entry", trc->elfh);
+
+    if (entry_sym == NULL)
+    {
+        vDirectPrintMsg("task start: entry symbol not found\n");
+        return 0;
+    }
+    entry_point = trc->cont_mem + entry_sym->st_value;
+    if(entry_sym == NULL)
+        vDirectPrintMsg("did not find entry for the task\n");
+
+    if((u_int32_t)entry_sym & 0x03)
+    {
+        vDirectPrintMsg("entry point is not 4 byte aligned\n");
+    }
+
+    if(xTaskCreate((pdTASK_CODE)entry_point, (const char *)trc->name,
+            configMINIMAL_STACK_SIZE, NULL,
+            APPLICATION_TASK_PRIORITY, &trc->task_handle) != pdPASS)
+    {
+        vDirectPrintMsg("could not create task\n");
+    }
+    vDirectPrintMsg("tsk started successfully\n");
+    return 1;
+}
+
 int task_call_crh(task_register_cons *trc, cp_req_t req_type)
 {
 #if 0

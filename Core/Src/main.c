@@ -100,7 +100,7 @@ static void MX_ETH_Init(void);
 //static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
-uint8_t simple_elf_v1[6000];
+void * simple_elf_v1;
 task_register_cons * simplec = NULL;
 /* USER CODE BEGIN PFP */
 
@@ -249,11 +249,14 @@ int main(void)
 
     //Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
     volatile void *simple_elfh = APPLICATION_ELF(simple);
-    uint8_t simple_elf_tmp[21000];
-    Elf32_Ehdr *elfh = (void *)(simple_elf_tmp);
+    uint8_t simple_elf_tmp[5000];
+    //Elf32_Ehdr *elfh = (void *)(simple_elf_tmp);
+    simple_elf_v1 = (Elf32_Ehdr *)simple_elf_tmp;
     //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
     //vDirectPrintMsg("hello to dynamic link\n");
-    HAL_UART_Receive(&huart3, simple_elf_tmp, 20000, 30000);
+    for (i = 0; i < 5000; i++)
+        simple_elf_tmp[i] = 0x00;
+    HAL_UART_Receive(&huart3, simple_elf_tmp, 5000, 20000);
 
     /*while (simple_elf_tmp[i] != '0' && simple_elf_tmp[i+1] != 'x')
     {
@@ -300,6 +303,8 @@ int main(void)
         tmp1 = tmp1 << 4;
         tmp2 = tmp2 & 0x0F;
         simple_elf_v1[j++] = tmp1 | tmp2;
+
+
         i += 2;
     }
 #endif

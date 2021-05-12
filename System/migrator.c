@@ -39,7 +39,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 		vDirectPrintMsg("Failed to link task ");
 		return 0;
 	}
-	if (!task_start(new_trc))
+	if (!task_start_v1(new_trc))
     {
         vDirectPrintMsg("Failed to start task \n");
     }
@@ -132,7 +132,7 @@ int migrator_task_start()
     vDirectPrintMsg("migrator_task start\n");
 	if(xTaskCreate(migrator_task, (const char *)"migrator_task",
 			configMINIMAL_STACK_SIZE, NULL,
-			2,migrator_task_handle) != pdPASS)
+			2, migrator_task_handle) != pdPASS)
 	{
 		vDirectPrintMsg("Failed to create migrator task");
 		return 0;
