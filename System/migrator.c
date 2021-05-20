@@ -22,7 +22,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	if(!check_elf_magic(new_sw))
 	{
 		vDirectPrintMsg("new software ELF wrong");
-		return ERROR_ELF_MAGIC;
+		return 0;
 	}
 
 	/* allocate memory for new task */
@@ -31,7 +31,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	if (!task_alloc(new_trc))
 	{
 		vDirectPrintMsg("Failed to allocate task");
-        return ERROR_TASK_ALLOC;
+        return 0;
 	}
 	/* link new software */
 	if (!task_link(new_trc))
@@ -39,15 +39,16 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 		vDirectPrintMsg("Failed to link task ");
 		return 0;
 	}
-	if (!task_start_v1(new_trc))
-    {
-        vDirectPrintMsg("Failed to start task \n");
-    }
+	//if (!task_start_v1(new_trc))
+    //{
+    //    vDirectPrintMsg("Failed to start task \n");
+    //}
+
 #if 0
 	new_trc->request_hook = task_find_request_hook(new_trc);
 	if (new_trc->request_hook == NULL) {
 	    vDirectPrintMsg("could not find checkpoint request hook durint RTU");
-	    return ERROR_TASK_ALLOC;
+	    return 0;
 	}
 
 	/* find rtu_data section */
@@ -60,7 +61,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	    old_rtu == NULL || new_rtu == NULL)
 	{
 	    vDirectPrintMsg("faile dto find the rtu data section");
-	    return ERROR_RTU_SECTION_NOT_FOUND;
+	    return 0;
 	}
 
 	void *old_rtu_mem = task_get_section_address(trc, old_rtu_ndx);
@@ -68,7 +69,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	if (old_rtu_mem == NULL || new_rtu_mem == NULL)
     {
         vDirectPrintMsg("faile dto find the rtu data section address");
-        return ERROR_RTU_SECTION_NOT_FOUND;
+        return 0;
     }
 
 	/*
@@ -77,17 +78,17 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
      * function too.
      */
 	memcpy((void *)new_rtu_mem, (void *)old_rtu_mem, old_rtu->sh_size);
-
+#endif
 
 	/* start new task */
-	if (!task_start(new_trc))
+	if (!task_start_v1(new_trc))
 	{
 		vDirectPrintMsg("Failed to start task \n");
 	}
-	vTaskDelete(trc->task_handle);
-	task_free(trc);
-#endif
-	return ERROR_SUCCESS;
+	//vTaskDelete(trc->task_handle);
+	//task_free(trc);
+
+	return 0;
 }
 
 int migrator_task_loop()

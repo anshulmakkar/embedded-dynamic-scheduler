@@ -284,13 +284,15 @@ request_hook_fn_t task_find_request_hook(task_register_cons *trc)
 	{
 		ret = (request_hook_fn_t)((u_int32_t)trc->cont_mem +
 				(u_int32_t)request_hook_symbol->st_value);
-		vDirectPrintMsg("found request hook symbol");
 	}
+	else
+	    vDirectPrintMsg("Failed to find request_hook");
 	return ret;
 }
 int task_alloc(task_register_cons *trc)
 {
     int i;
+    char buffer[50];
     /* e_shoff : section header table's file offset in bytes */
     Elf32_Shdr *s = (Elf32_Shdr *)((u_int32_t)trc->elfh + trc->elfh->e_shoff);
     u_int32_t alloc_size = 0;
@@ -351,7 +353,9 @@ int task_alloc(task_register_cons *trc)
             }
             tsc->name = (char *)((u_int32_t)trc->elfh + (u_int32_t)strtab_sect->sh_offset + s[i].sh_name);
             //vDirectPrintMsg("processing allocation for section %s\n", tsc->name);
-            vDirectPrintMsg("processing allocation for section\n");
+            sprintf(buffer, "allocation for section %s \n", tsc->name);
+            vDirectPrintMsg(buffer);
+
             tsc->section_index = i;
             tsc->amem = (void *)(cm_addr + s[i].sh_addr);
             LIST_INSERT_HEAD(&trc->sections, tsc, sections);
@@ -454,6 +458,7 @@ int task_start(task_register_cons *trc)
 		vDirectPrintMsg("could not create task\n");
 	}
 	vDirectPrintMsg("tsk started successfully\n");
+	vTaskDelay(2000);
 	return 1;
 }
 
@@ -488,26 +493,50 @@ int task_start_v1(task_register_cons *trc)
     return 1;
 }
 
+void  *task_get_section_address(task_register_cons *trc, Elf32_Half index)
+{
+    Elf32_Shdr *section_hdr = (Elf32_Shdr *)((u_int32_t)trc->elfh + trc->elfh->e_shoff);
+    struct task_section_cons_t *p;
+
+    if (index > trc->elfh->e_shnum)
+        return NULL;
+
+    if (section_hdr[index].sh_flags & SHF_ALLOC)
+    {
+        /* section should have been allocated uptil now */
+        LIST_FOREACH(p, &trc->sections, sections)
+        {
+            if (p->section_index == index)
+                return p->amem;
+        }
+    }
+    else
+    {
+        vDirectPrintMsg("section address not allocated");
+        /* section is not allocated , returning the address of the elf binary */
+        return (void *)((u_int32_t)trc->elfh + section_hdr[index].sh_offset);
+    }
+    vDirectPrintMsg("section address not found");
+    return NULL;
+}
+
 int task_call_crh(task_register_cons *trc, cp_req_t req_type)
 {
-#if 0
 	if (trc->request_hook != NULL)
-	{
 		(trc->request_hook)(req_type);
-	}
-#endif
-
+	else
+	    return 0;
+	return 1;
 }
 
 int task_wait_for_checkpoint(task_register_cons *trc, cp_req_t req_type)
 {
-#if 0
 	if (!task_call_crh(trc, req_type))
 	{
 		vDirectPrintMsg("could not call checkpoint request hook");
 		return 0;
 	}
-#endif
+
 	return 1;
 
 }
