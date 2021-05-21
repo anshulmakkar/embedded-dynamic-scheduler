@@ -23,5 +23,11 @@ SECTIONS
     {
         *(.bss)
     }
+    .rtu_data :
+    {
+      __RTU_DATA_START = .;
+      KEEP(*(.rtu_data))
+      __RTU_DATA_END = .;
+    }
     . = ALIGN(4);
 }

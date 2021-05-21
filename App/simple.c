@@ -62,7 +62,9 @@ typedef struct
 #define USART3              ((USART_TypeDef *) USART3_BASE)
 int rtu_requested = 0;
 
-int _RTU_DATA_ state = 10;
+uint8_t __attribute__((section (RTU_DATA_SECTION_NAME))) state = 'O';
+extern int __RTU_DATA_START, __RTU_DATA_END;
+uint8_t *p, *end;
 
 void cpRequestHook(int type)
 {
@@ -82,6 +84,9 @@ void cpRequestHook(int type)
 /* Startup function that creates and runs two FreeRTOS tasks */
 void simple_entry(void *param)
 {
+    p = (uint8_t*)&__RTU_DATA_START;
+    end = (uint8_t*)&__RTU_DATA_END;
+    //state = 'o';
     /*
      * I M P O R T A N T :
      * Make sure (in startup.s) that main is entered in Supervisor mode.
@@ -99,7 +104,6 @@ void simple_entry(void *param)
      //   USART3->TDR = (uint8_t)(*str & 0xFFU);
      //   str++;
     //}
-    USART3->TDR = (uint8_t)'s';
 
     if (param != NULL)
         USART3->TDR = (uint8_t)'d';
@@ -116,8 +120,8 @@ void simple_entry(void *param)
             rtu_requested = 0;
             //vTaskSuspend(1000);
         }
+        //USART3->TDR = (uint8_t)state;
 
     	//for ( i = 0; i < 5000; i++);
-    	state = 20;
     }
 }

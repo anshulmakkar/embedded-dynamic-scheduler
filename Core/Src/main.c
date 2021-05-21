@@ -249,14 +249,14 @@ int main(void)
 
     //Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
     volatile void *simple_elfh = APPLICATION_ELF(simple);
-    uint8_t simple_elf_tmp[5000];
+    uint8_t simple_elf_tmp[7000];
     //Elf32_Ehdr *elfh = (void *)(simple_elf_tmp);
     simple_elf_v1 = (Elf32_Ehdr *)simple_elf_tmp;
     //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
     //vDirectPrintMsg("hello to dynamic link\n");
-    for (i = 0; i < 5000; i++)
+    for (i = 0; i < 7000; i++)
         simple_elf_tmp[i] = 0x00;
-    HAL_UART_Receive(&huart3, simple_elf_tmp, 5000, 20000);
+    HAL_UART_Receive(&huart3, simple_elf_tmp, 7000, 20000);
 
     /*while (simple_elf_tmp[i] != '0' && simple_elf_tmp[i+1] != 'x')
     {

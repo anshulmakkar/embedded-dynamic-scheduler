@@ -62,13 +62,29 @@ typedef struct
 
 int rtu_requested = 0;
 
-int _RTU_DATA_ state = 10;
+//uint8_t _RTU_DATA_ tst = 'b';
+uint8_t __attribute__((section (RTU_DATA_SECTION_NAME))) state;
+extern int __RTU_DATA_START, __RTU_DATA_END;
+uint8_t *p, *end;
+
+//uint8_t state __attribute__ ((section (RTU_DATA_SECTION_NAME))) = 'd';
 
 void cpRequestHook(int type)
 {
 	rtu_requested = 1;
 }
 
+/* void UARTtransmitBuffer(int i){
+      if(usartIsTxRegEmpty(uart5)){
+          (uart5)->DR = wordsBuffer[i];
+          i++;
+          if(wordsBuffer[i-1] == '\n'){
+            i = 0;
+         }
+      }
+
+}
+*/
 /*
  * This diagnostic pragma will suppress the -Wmain warning,
  * raised when main() does not return an int
@@ -81,6 +97,37 @@ void cpRequestHook(int type)
 /* Startup function that creates and runs two FreeRTOS tasks */
 void simple_entry_v1(void *param)
 {
+    p = (uint8_t*)&__RTU_DATA_START;
+    end = (uint8_t*)&__RTU_DATA_END;
+    static volatile int i = 0;
+    /*char wordsBuffer[] = {
+        'H',
+        'e',
+        'l',
+        'l',
+        'o',
+        ' ',
+        'W',
+        'o',
+        'r',
+        'l',
+        'd',
+        '!',
+        '\n',
+    };
+    for ( int i = 0; i < 13; i++)
+    {
+        (USART3)->TDR = wordsBuffer[i];
+        while (!(USART3->ISR & (1<<6)));
+        i++;
+        if(wordsBuffer[i-1] == '\n')
+        {
+            i = 0;
+        }
+
+    } */
+
+    //uint8_t msg = 'h';
     /*
      * I M P O R T A N T :
      * Make sure (in startup.s) that main is entered in Supervisor mode.
@@ -89,16 +136,33 @@ void simple_entry_v1(void *param)
      */
 	//uart_print(0, "test test");
     //uart_print("= = = S I M P LE T E S T   S T A R T E D = = =\n");
-    USART3->TDR = (uint8_t)'1';
     if (param != NULL)
         USART3->TDR = (uint8_t)'2';
     	//uart_print("param to simple not null");
        /* Create a print gate keeper task: */
+    /* for (i= 0; i < 1000; i++)
+    {
+        while (!(USART3->ISR & (1<<6)));
+        USART3->TDR = (uint8_t)'b';
+        while (!(USART3->ISR & (1<<6)));
+        USART3->TDR = (uint8_t)'b';
+        while (!(USART3->ISR & (1<<6)));
+        USART3->TDR = (uint8_t)'c';
+        while (!(USART3->ISR & (1<<6)));
+        USART3->TDR = (uint8_t)'d';
+        while (!(USART3->ISR & (1<<6)));
+        USART3->TDR = (uint8_t)'e';
+        while (!(USART3->ISR & (1<<6)));
+    }*/
 
+    state = 'z';
     /* just in case if an infinite loop is somehow omitted in FreeRTOS_Error */
     while (1)
     {
-        USART3->TDR = (uint8_t)'2';
+        i = 0;
+        //USART3->TDR = (uint8_t)state;
+        //while (!(USART3->ISR & (1<<6)));
+
         if (rtu_requested)
         {
             rtu_requested = 0;
@@ -106,6 +170,6 @@ void simple_entry_v1(void *param)
         }
 
     	//vTaskDelay(1000);
-    	state = state + 50;
+
     }
 }
