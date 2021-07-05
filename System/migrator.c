@@ -83,9 +83,14 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	{
 		vDirectPrintMsg("Failed to start task \n");
 	}
-	Elf32_Half replaced_rtu_ndx = find_section_index(RTU_DATA_SECTION_NAME, trc->elfh);
-	Elf32_Shdr *replaced_rtu = find_section(RTU_DATA_SECTION_NAME, trc->elfh);
+	Elf32_Half replaced_rtu_ndx = find_section_index(RTU_DATA_SECTION_NAME, new_trc->elfh);
+	Elf32_Shdr *replaced_rtu = find_section(RTU_DATA_SECTION_NAME, new_trc->elfh);
 	void *replaced_rtu_mem = task_get_section_address(new_trc, new_rtu_ndx);
+	if (replaced_rtu_mem == NULL)
+	{
+	    vDirectPrintMsg("replaced rtu memory null\n");
+	    return 0;
+	}
 	//vTaskDelete(trc->task_handle);
 	//task_free(trc);
 
@@ -111,7 +116,7 @@ int migrator_task_loop()
 			vDirectPrintMsg("Starting Runtime Update");
 			if (!migrator_runtime_update(trc, updated_sw))
 			{
-				vDirectPrintMsg("Failed to update the software");
+				vDirectPrintMsg("Runtime update successful");
 				return 0;
 			}
 			vDirectPrintMsg("Runtime update successful");
