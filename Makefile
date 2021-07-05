@@ -52,6 +52,7 @@ App/simple_v1.c
 C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/logger.c \
+Core/Src/jumptbl.c \
 System/task_manager.c \
 System/migrator.c \
 Core/Src/stm32h7xx_it.c \
@@ -170,7 +171,9 @@ C_INCLUDES =  \
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib
+
+CFLAGS_APP = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -nostdlib
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -189,7 +192,7 @@ LDSCRIPT = STM32H753ZITx_FLASH.ld
 LDSCRIPT_APP = app.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS = -lc -lm -lnosys
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 LDFLAGS_APP = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APP) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP).map,--cref -Wl,--gc-sections -nostartfiles -fPIC -shared
@@ -240,7 +243,7 @@ APP_OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_APP_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_APP_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) -nostdlib -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ 
 	
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
@@ -272,7 +275,7 @@ APP_V1_OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_APP_V1_SOURCES:.s=.o)
 vpath %.s $(sort $(dir $(ASM_APP_V1_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) -nostdlib -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ 
 	
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@

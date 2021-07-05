@@ -30,6 +30,7 @@
 #include "task_manager.h"
 //#include "logger.h"
 #include "migrator.h"
+#include "jumptbl.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -102,6 +103,8 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
 void * simple_elf_v1;
 task_register_cons * simplec = NULL;
+uint8_t simple_elf_tmp[12000];
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -114,6 +117,18 @@ int len;
 
 uint8_t indx, rx_data[2], rx_buffer[100], tx_done;
 
+//typedef struct _myapi
+//{
+//  void (*log_msg)(const char* msg);
+//} myapi;
+
+
+
+//#define LOCATE_FUNC  __attribute__((__section__(".mysection")))
+//myapi jumptbl_apis __attribute__((section(".jumptbl"))) =
+//{
+ // &jumptbl_logmsg,
+//};
 void uartt_print(UART_HandleTypeDef *uart, const char* str)
 {
     /*
@@ -196,6 +211,12 @@ int main(void)
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
 
+    /* disable MPU */
+    HAL_MPU_Disable();
+
+    /* disable MPU */
+    HAL_MPU_Disable();
+
     /* USER CODE BEGIN Init */
 
     /* USER CODE END Init */
@@ -249,65 +270,21 @@ int main(void)
 
     //Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
     volatile void *simple_elfh = APPLICATION_ELF(simple);
-    uint8_t simple_elf_tmp[7000];
+    //uint8_t simple_elf_tmp[12000];
+    //uint8_t * simple_elf_tmp =
+    //       (uint8_t *)SYSTEM_MALLOC_CALL(12000);
     //Elf32_Ehdr *elfh = (void *)(simple_elf_tmp);
-    simple_elf_v1 = (Elf32_Ehdr *)simple_elf_tmp;
     //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
     //vDirectPrintMsg("hello to dynamic link\n");
-    for (i = 0; i < 7000; i++)
-        simple_elf_tmp[i] = 0x00;
-    HAL_UART_Receive(&huart3, simple_elf_tmp, 7000, 20000);
-
+    for (i = 0; i < 12000; i++)
+        simple_elf_tmp[i]= 0x00;
+    HAL_UART_Receive(&huart3, simple_elf_tmp, 12000, 20000);
+    simple_elf_v1 = (Elf32_Ehdr *)simple_elf_tmp;
     /*while (simple_elf_tmp[i] != '0' && simple_elf_tmp[i+1] != 'x')
     {
         i++;
     }*/
     i = 0;
-#if 0
-    for (j = 0; i < 20000;)
-    {
-        uint8_t tmp1 = simple_elf_tmp[i];
-        uint8_t tmp2 = simple_elf_tmp[i+1];
-        /*
-        if (simple_elf_tmp[i] == '0' && simple_elf_tmp[i+1] == 'x')
-        {
-            i = i+2;
-            continue;
-        }
-        if (simple_elf_tmp[i] == '\n' || simple_elf_tmp[i] == '\r')
-        {
-            i++;
-            continue;
-        }
-
-        if (tmp1 < '0' || tmp2 < '0')
-        {
-            i = i+1;
-            continue;
-        }*/
-        if (simple_elf_tmp[i] == '\n' || simple_elf_tmp[i] == '\r')
-        {
-            i++;
-            continue;
-        }
-        if (tmp1<='9' &&  tmp1 >= '0')
-            tmp1 = tmp1-'0';
-        else if (tmp1 >= 'A' && tmp1 <= 'E')
-            tmp1 = tmp1-'A'+10;
-
-        if (tmp2<='9' &&  tmp2 >= '0')
-            tmp2= tmp2-'0';
-        else if (tmp2 >= 'A' && tmp2 <= 'E')
-            tmp2 = tmp2-'A'+10;
-
-        tmp1 = tmp1 << 4;
-        tmp2 = tmp2 & 0x0F;
-        simple_elf_v1[j++] = tmp1 | tmp2;
-
-
-        i += 2;
-    }
-#endif
     //HAL_Delay(1000);
 
     //task_register_cons * simplec = task_register("simple", simple_elfh);

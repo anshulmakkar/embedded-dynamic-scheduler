@@ -8,11 +8,19 @@
 
 #include "task_manager.h"
 #include "system.h"
+#include "jumptbl.h"
 
 //task_register_tree task_register_tree_var =
 //RB_INITIALIZER(task_register_tree);
 //RB_GENERATE(task_register_tree_t, task_register_cons_t, tasks, task_register_cons_cmp)
 //
+
+//typedef struct _myapi
+//{
+//    void (*log_msg)();
+//} myapi;
+//typedef void (*t_funcPtr)(const char *);
+typedef void (*p_jumptbl_logmsg)();
 extern task_register_cons * simplec;
 int division(int dividend, int divisor)
 {
@@ -177,6 +185,7 @@ int link_relocations(task_register_cons *app_trc)
     task_register_cons *symbol_trc = NULL;
     u_int32_t address = 0;
     u_int32_t *rel_address = NULL;
+    char log_buf[50];
 
     s = (Elf32_Shdr*)((u_int32_t)app_trc->elfh + app_trc->elfh->e_shoff);
 
@@ -219,10 +228,15 @@ int link_relocations(task_register_cons *app_trc)
     			case R_ARM_RELATIVE:
     				vDirectPrintMsg("not handled relative\n");
     				continue; //not handled.
+    			case R_ARM_ABS32: // not sure how to handle it. Just continue. ITs there because of jumptbl
+    			    vDirectPrintMsg("not handled R_ARM_ABS32\n");
+                    continue; //not handled.
     			default:
-    				vDirectPrintMsg("Found not supported relocation type\n");
+                    sprintf(log_buf, "Not supported relocation type %ld \n", ELF32_R_TYPE(r[j].r_info));
+                    vDirectPrintMsg(log_buf);
     			return 0;
     		}
+
     		/* 1 find the symbol in the give elf binaries. */
     		app_symbol = &app_symtab[ELF32_R_SYM(r[j].r_info)];
     		if (!find_symbols_in_elfhs(app_symbol, &final_symbol, &symbol_trc, app_trc))
@@ -436,7 +450,8 @@ int task_start(task_register_cons *trc)
 	entry_ptr_t entry_point = NULL;
 	entry_sym = find_symbol("_start", trc->elfh);
 	//entry_sym = find_symbol("simple_entry", trc->elfh);
-
+	//p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x800d950|1);
+    //jumptbl_logmsg();
 	if (entry_sym == NULL)
 	{
 		vDirectPrintMsg("task start: entry symbol not found\n");
@@ -468,7 +483,13 @@ int task_start_v1(task_register_cons *trc)
     entry_ptr_t entry_point = NULL;
     entry_sym = find_symbol("_start_v1", trc->elfh);
     //entry_sym = find_symbol("simple_entry", trc->elfh);
-
+    //myapi *pAPI = (myapi*)(0x2001F000);
+    //pAPI->log_msg("Ohhhhhhhhhhhhh Mannnnnnnnnn hello world");
+    //MyAPI *pAPI = (MyAPI*)(0x2001F004|1);
+    //pAPI->jumptbl_msg();
+    // t_funcPtr MyFunc = (t_funcPtr)(0x08001af4|1);
+    //p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x800d950|1);
+    //jumptbl_logmsg();
     if (entry_sym == NULL)
     {
         vDirectPrintMsg("task start: entry symbol not found\n");
@@ -489,7 +510,7 @@ int task_start_v1(task_register_cons *trc)
     {
         vDirectPrintMsg("could not create task\n");
     }
-    vDirectPrintMsg("tsk started successfully\n");
+    //vDirectPrintMsg("tsk started successfully\n");
     return 1;
 }
 

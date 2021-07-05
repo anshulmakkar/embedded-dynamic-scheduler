@@ -10,6 +10,7 @@
  */
 
 #include "logger.h"
+#include "jumptbl.h"
 /**
   * @brief USART3 Initialization Function
   * @param None
@@ -17,6 +18,77 @@
   */
 
 extern UART_HandleTypeDef huart3;
+
+//...
+//MyAPI main_API __attribute__((section(".jumptbl"))) =
+//__attribute__ ((section (".jumptbl"))) MyAPI main_API =
+//{
+//  &vDirectPrintMsg,
+//};
+
+void vDirectPrintMsg(const char* msg)
+{
+    if ( NULL != msg )
+    {
+        //uart_print(&huart3, msg);
+        //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
+        for ( ; '\0' != *msg; ++msg )
+        {
+            //__printCh(nr, *cp);
+            //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
+            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
+            HAL_Delay(10);
+        }
+        HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);
+        HAL_Delay(10);
+
+    }
+}
+
+void vDirectPrintMsgSimple(const char* msg)
+{
+    if ( NULL != msg )
+    {
+        //uart_print(&huart3, msg);
+        //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
+        for ( ; '\0' != *msg; ++msg )
+        {
+            //__printCh(nr, *cp);
+            //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
+            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
+            HAL_Delay(10);
+        }
+        HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);
+        HAL_Delay(10);
+
+    }
+}
+
+void vDirectPrintMsgSimplev1(const char* msg)
+{
+    if ( NULL != msg )
+    {
+        //uart_print(&huart3, msg);
+        //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
+        for ( ; '\0' != *msg; ++msg )
+        {
+            //__printCh(nr, *cp);
+            //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
+            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
+            HAL_Delay(10);
+        }
+        HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);
+        HAL_Delay(10);
+
+    }
+}
+
+//...
+//MyAPI main_API __attribute__((section(".jumptbl"))) =
+//__attribute__ ((section (".jumptbl"))) MyAPI main_API =
+//{
+//  &vDirectPrintMsg,
+//};
 
 void MX_USART3_UART_Init(void)
 {
@@ -83,21 +155,4 @@ void uart_print(UART_HandleTypeDef *uart, const char* str)
     }
 }
 
-void vDirectPrintMsg(const char* msg)
-{
-    if ( NULL != msg )
-    {
-        //uart_print(&huart3, msg);
-        //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
-        for ( ; '\0' != *msg; ++msg )
-        {
-            //__printCh(nr, *cp);
-            //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
-            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
-            HAL_Delay(10);
-        }
-        HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);
-        HAL_Delay(10);
 
-    }
-}

@@ -55,10 +55,13 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = 0x20020000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
+_Min_Heap_Size = 0x200;      /* required amount of heap . Its from DTCRAM */ 
+_Min_Stack_Size = 0x400; /* required amount of stack. Its from DTCRAM*/
 
-/* Specify the memory areas */
+/* Specify the memory areas 
+ * 2MB of FLASH with this board
+ * 128k DTC RAM
+ */
 MEMORY
 {
 DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
@@ -134,6 +137,9 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >FLASH
 
+  
+  
+
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 
@@ -149,10 +155,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >DTCMRAM AT> FLASH
 
-  .applications :
-  {
-    INCLUDE "System/applications.ld"
-  }
+
   
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -181,6 +184,15 @@ SECTIONS
     . = ALIGN(8);
   } >DTCMRAM
 
+  .applications :
+  {
+    INCLUDE "System/applications.ld"
+  }
+
+  .jumptbl_block :
+  {
+    KEEP(*(.jumptbl))
+  }
   
 
   /* Remove information from the standard libraries */
