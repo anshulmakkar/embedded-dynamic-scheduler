@@ -104,7 +104,7 @@ void StartDefaultTask(void *argument);
 void * simple_elf_v1;
 task_register_cons * simplec = NULL;
 uint8_t simple_elf_tmp[12000];
-
+xTaskHandle      static_task_handle;
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -194,6 +194,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 /* USER CODE END 0 */
 
+void static_task()
+{
+    vDirectPrintMsg("static_task\n");
+    while (1)
+    {
+        vTaskDelay(2000);
+        vDirectPrintMsg("static task");
+    }
+}
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -268,14 +278,12 @@ int main(void)
     /* creation of defaultTask */
     //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-    //Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
-    volatile void *simple_elfh = APPLICATION_ELF(simple);
+    Elf32_Ehdr *simple_elfh = APPLICATION_ELF(simple);
+    //volatile void *simple_elfh = APPLICATION_ELF(simple);
     //uint8_t simple_elf_tmp[12000];
     //uint8_t * simple_elf_tmp =
     //       (uint8_t *)SYSTEM_MALLOC_CALL(12000);
-    //Elf32_Ehdr *elfh = (void *)(simple_elf_tmp);
-    //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
-    //vDirectPrintMsg("hello to dynamic link\n");
+
     for (i = 0; i < 12000; i++)
         simple_elf_tmp[i]= 0x00;
     HAL_UART_Receive(&huart3, simple_elf_tmp, 12000, 20000);
@@ -286,7 +294,6 @@ int main(void)
     }*/
     i = 0;
     //HAL_Delay(1000);
-
     //task_register_cons * simplec = task_register("simple", simple_elfh);
     simplec = task_register("simple", simple_elfh);
     if (!task_alloc(simplec))
@@ -306,11 +313,21 @@ int main(void)
         vDirectPrintMsg("Failed to start task\n");
     }
 
+    vDirectPrintMsg("Starting static task \n");
+    if(xTaskCreate(migrator_task, (const char *)"static_task",
+            configMINIMAL_STACK_SIZE, NULL,
+            2, static_task_handle) != pdPASS)
+    {
+        vDirectPrintMsg("Failed to create migrator task");
+    }
+
     vDirectPrintMsg("Starting Migrator\n");
     if (!migrator_task_start())
     {
         vDirectPrintMsg("Failed to start the migrator");
     }
+    //vTaskDelay(10000);
+
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */

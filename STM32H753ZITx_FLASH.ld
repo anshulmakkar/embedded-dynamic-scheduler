@@ -137,8 +137,12 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >FLASH
 
-  
-  
+  .applications :
+  {
+    INCLUDE "System/applications.ld"
+
+    . = ALIGN(4);
+  } > FLASH
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -184,10 +188,6 @@ SECTIONS
     . = ALIGN(8);
   } >DTCMRAM
 
-  .applications :
-  {
-    INCLUDE "System/applications.ld"
-  }
 
   .jumptbl_block :
   {

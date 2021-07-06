@@ -472,8 +472,8 @@ int task_start(task_register_cons *trc)
 	{
 		vDirectPrintMsg("could not create task\n");
 	}
+	vDirectPrintMsgSimple();
 	vDirectPrintMsg("tsk started successfully\n");
-	vTaskDelay(2000);
 	return 1;
 }
 
@@ -503,14 +503,14 @@ int task_start_v1(task_register_cons *trc)
     {
         vDirectPrintMsg("entry point is not 4 byte aligned\n");
     }
-
+    vDirectPrintMsgSimplev1();
     if(xTaskCreate((pdTASK_CODE)entry_point, (const char *)trc->name,
             configMINIMAL_STACK_SIZE, NULL,
             APPLICATION_TASK_PRIORITY, &trc->task_handle) != pdPASS)
     {
         vDirectPrintMsg("could not create task\n");
     }
-    //vDirectPrintMsg("tsk started successfully\n");
+    vDirectPrintMsg("tsk v1 started successfully\n");
     return 1;
 }
 

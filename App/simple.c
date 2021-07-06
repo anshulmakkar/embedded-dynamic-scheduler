@@ -34,23 +34,22 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include "rtu.h"
+#include "logger.h"
 #include "jumptbl.h"
 
 
 int rtu_requested = 0;
 
-uint8_t __attribute__((section (RTU_DATA_SECTION_NAME))) state = 'O';
+//uint8_t _RTU_DATA_ tst = 'b';
+uint8_t __attribute__((section (RTU_DATA_SECTION_NAME))) state;
 extern int __RTU_DATA_START, __RTU_DATA_END;
 
-typedef void (*p_jumptbl_logmsg)(const char *);
-typedef void (*p_jumptbl_taskdelay)(uint32_t);
+//uint8_t state __attribute__ ((section (RTU_DATA_SECTION_NAME))) = 'd';
 
 void cpRequestHook(int type)
 {
-	rtu_requested = 1;
+    rtu_requested = 1;
 }
-
-
 /*
  * This diagnostic pragma will suppress the -Wmain warning,
  * raised when main() does not return an int
@@ -59,25 +58,32 @@ void cpRequestHook(int type)
  * More details about the GCC diagnostic pragmas:
  * https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
  */
-
+typedef void (*p_jumptbl_logmsg)();
+typedef void (*p_jumptbl_taskdelay)(uint32_t);
 /* Startup function that creates and runs two FreeRTOS tasks */
 void simple_entry(void *param)
 {
-       /* Create a print gate keeper task: */
-    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x2000ad98|1);
-    jumptbl_logmsg("app: simple");
-    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007550|1);
-    jumptbl_taskdelay(2000);
+    //p = (uint8_t*)&__RTU_DATA_START;
 
+    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x20008608|1);
+    jumptbl_logmsg();
+    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007800|1);
+    jumptbl_taskdelay(2000);
+    //state = 'z';
     /* just in case if an infinite loop is somehow omitted in FreeRTOS_Error */
     while (1)
     {
-        jumptbl_logmsg("app: simple");
-        jumptbl_taskdelay(2000);
+
+       jumptbl_logmsg();
+       jumptbl_taskdelay(2000);
+
         if (rtu_requested)
         {
             rtu_requested = 0;
-            //vTaskSuspend(1000);
+            //vTaskSuspend();
         }
+
+        //vTaskDelay(1000);
+
     }
 }

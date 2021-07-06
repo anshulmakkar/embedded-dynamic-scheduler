@@ -45,17 +45,18 @@ void vDirectPrintMsg(const char* msg)
     }
 }
 
-void vDirectPrintMsgSimple(const char* msg)
+void vDirectPrintMsgSimple()
 {
-    if ( NULL != msg )
+    const char * message = "test";
+    if ( NULL != message )
     {
         //uart_print(&huart3, msg);
         //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
-        for ( ; '\0' != *msg; ++msg )
+        for ( ; '\0' != *message; ++message )
         {
             //__printCh(nr, *cp);
             //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
-            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
+            HAL_UART_Transmit(&huart3, (uint8_t*)(message), 1,10);
             HAL_Delay(10);
         }
         HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);
@@ -64,17 +65,18 @@ void vDirectPrintMsgSimple(const char* msg)
     }
 }
 
-void vDirectPrintMsgSimplev1(const char* msg)
+void vDirectPrintMsgSimplev1()
 {
-    if ( NULL != msg )
+    const char * message = "simplev1";
+    if ( NULL != message )
     {
         //uart_print(&huart3, msg);
         //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
-        for ( ; '\0' != *msg; ++msg )
+        for ( ; '\0' != *message; ++message )
         {
             //__printCh(nr, *cp);
             //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
-            HAL_UART_Transmit(&huart3, (uint8_t*)(msg), 1,10);
+            HAL_UART_Transmit(&huart3, (uint8_t*)(message), 1,10);
             HAL_Delay(10);
         }
         HAL_UART_Transmit(&huart3, (uint8_t*)'\n', 1,10);

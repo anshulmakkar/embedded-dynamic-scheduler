@@ -16,7 +16,7 @@ extern task_register_cons * simplec;
 int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 {
 	/* make sure the task is suspended */
-	vTaskSuspend(trc->task_handle);
+	//vTaskSuspend(trc->task_handle);
 
 	/* check elf magic */
 	if(!check_elf_magic(new_sw))
@@ -39,11 +39,11 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 		vDirectPrintMsg("Failed to link task ");
 		return 0;
 	}
-	//if (!task_start_v1(new_trc))
-    //{
-    //    vDirectPrintMsg("Failed to start task \n");
-    //}
-
+	if (!task_start_v1(new_trc))
+    {
+       vDirectPrintMsg("Failed to start task \n");
+    }
+#if 0
 	new_trc->request_hook = task_find_request_hook(new_trc);
 	if (new_trc->request_hook == NULL) {
 	    vDirectPrintMsg("could not find checkpoint request hook durint RTU");
@@ -93,7 +93,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	}
 	//vTaskDelete(trc->task_handle);
 	//task_free(trc);
-
+#endif
 	return 0;
 }
 
