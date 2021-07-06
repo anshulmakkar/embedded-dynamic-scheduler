@@ -42,7 +42,8 @@ int rtu_requested = 0;
 uint8_t __attribute__((section (RTU_DATA_SECTION_NAME))) state = 'O';
 extern int __RTU_DATA_START, __RTU_DATA_END;
 
-typedef void (*p_jumptbl_logmsg)(void);
+typedef void (*p_jumptbl_logmsg)(const char *);
+typedef void (*p_jumptbl_taskdelay)(uint32_t);
 
 void cpRequestHook(int type)
 {
@@ -63,12 +64,16 @@ void cpRequestHook(int type)
 void simple_entry(void *param)
 {
        /* Create a print gate keeper task: */
-    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x02000ac3c|1);
-    jumptbl_logmsg();
+    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x2000ad98|1);
+    jumptbl_logmsg("app: simple");
+    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007550|1);
+    jumptbl_taskdelay(2000);
 
     /* just in case if an infinite loop is somehow omitted in FreeRTOS_Error */
     while (1)
     {
+        jumptbl_logmsg("app: simple");
+        jumptbl_taskdelay(2000);
         if (rtu_requested)
         {
             rtu_requested = 0;
