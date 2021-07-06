@@ -59,6 +59,7 @@ void cpRequestHook(int type)
  * https://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
  */
 typedef void (*p_jumptbl_logmsg)(void);
+typedef void (*p_jumptbl_taskdelay)(uint32_t);
 /* Startup function that creates and runs two FreeRTOS tasks */
 void simple_entry_v1(void *param)
 {
@@ -66,10 +67,15 @@ void simple_entry_v1(void *param)
 
     p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x2000ac3c|1);
     jumptbl_logmsg();
+    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007874|1);
+    jumptbl_taskdelay(2000);
     //state = 'z';
     /* just in case if an infinite loop is somehow omitted in FreeRTOS_Error */
     while (1)
     {
+
+       jumptbl_logmsg();
+       jumptbl_taskdelay(2000);
 
         if (rtu_requested)
         {
