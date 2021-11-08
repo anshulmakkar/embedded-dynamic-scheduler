@@ -41,10 +41,9 @@
 int rtu_requested = 0;
 
 //uint8_t _RTU_DATA_ tst = 'b';
-uint8_t __attribute__((section (RTU_DATA_SECTION_NAME))) state;
-extern int __RTU_DATA_START, __RTU_DATA_END;
 
 //uint8_t state __attribute__ ((section (RTU_DATA_SECTION_NAME))) = 'd';
+_RTU_DATA_ uint32_t state = 20;
 
 void cpRequestHook(int type)
 {
@@ -65,10 +64,11 @@ void simple_entry(void *param)
 {
     //p = (uint8_t*)&__RTU_DATA_START;
 
-    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x20008608|1);
+    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x20008609|1); //address of jumptbl_logmsg
     jumptbl_logmsg();
-    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007800|1);
+    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007935|1); // address of vTaskDelay
     jumptbl_taskdelay(2000);
+    state = 20;
     //state = 'z';
     /* just in case if an infinite loop is somehow omitted in FreeRTOS_Error */
     while (1)

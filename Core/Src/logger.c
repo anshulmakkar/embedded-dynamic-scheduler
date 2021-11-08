@@ -47,12 +47,18 @@ void vDirectPrintMsg(const char* msg)
 
 void vDirectPrintMsgSimple()
 {
-    const char * message = "test";
-    if ( NULL != message )
+    const char * message = "AltitudeControl";
+    //char message[50];
+    //void *ptr = 0x200010d4;
+    //sprintf(message, "AltitudeControl %ld \n", *(uint32_t *)ptr);
+    //message[20] =  '\0';
+    //vDirectPrintMsg(message);
+     if ( NULL != message )
     {
         //uart_print(&huart3, msg);
         //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
         for ( ; '\0' != *message; ++message )
+        //for (int i =0; i < 20; i++)
         {
             //__printCh(nr, *cp);
             //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);
@@ -67,12 +73,18 @@ void vDirectPrintMsgSimple()
 
 void vDirectPrintMsgSimplev1()
 {
-    const char * message = "simplev1";
+    const char * message = "AOCS";
+    //char message[50];
+    //void *ptr = 0x20001fd4;
+    //sprintf(message, "AltitudeControl %ld \n", *(uint32_t*)ptr);
+    //message[20] =  '\0';
+    //vDirectPrintMsg(message);
     if ( NULL != message )
     {
         //uart_print(&huart3, msg);
         //HAL_UART_Transmit_IT(&huart3, (uint8_t*)"simple hello", 12);
         for ( ; '\0' != *message; ++message )
+        //for (int i =0; i < 20; i++)
         {
             //__printCh(nr, *cp);
             //HAL_UART_Transmit_IT(&huart3, (uint8_t*)(msg), 1);

@@ -43,7 +43,13 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
     {
        vDirectPrintMsg("Failed to start task \n");
     }
-#if 0
+
+	vTaskDelay(10000);
+
+	/* suspend the task and now start updation */
+	vTaskSuspend(trc->task_handle);
+
+
 	new_trc->request_hook = task_find_request_hook(new_trc);
 	if (new_trc->request_hook == NULL) {
 	    vDirectPrintMsg("could not find checkpoint request hook durint RTU");
@@ -59,7 +65,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	if (old_rtu_ndx == 0 || new_rtu_ndx == 0 ||
 	    old_rtu == NULL || new_rtu == NULL)
 	{
-	    vDirectPrintMsg("faile dto find the rtu data section");
+	    vDirectPrintMsg("failed to find the rtu data section");
 	    return 0;
 	}
 
@@ -93,7 +99,7 @@ int migrator_runtime_update(task_register_cons *trc, Elf32_Ehdr *new_sw)
 	}
 	//vTaskDelete(trc->task_handle);
 	//task_free(trc);
-#endif
+
 	return 0;
 }
 

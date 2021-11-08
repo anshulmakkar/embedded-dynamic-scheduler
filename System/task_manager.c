@@ -367,8 +367,8 @@ int task_alloc(task_register_cons *trc)
             }
             tsc->name = (char *)((u_int32_t)trc->elfh + (u_int32_t)strtab_sect->sh_offset + s[i].sh_name);
             //vDirectPrintMsg("processing allocation for section %s\n", tsc->name);
-            sprintf(buffer, "allocation for section %s \n", tsc->name);
-            vDirectPrintMsg(buffer);
+            //sprintf(buffer, "allocation for section %s \n", tsc->name);
+            //vDirectPrintMsg(buffer);
 
             tsc->section_index = i;
             tsc->amem = (void *)(cm_addr + s[i].sh_addr);
