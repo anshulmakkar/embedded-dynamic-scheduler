@@ -103,7 +103,7 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
 void * simple_elf_v1;
 task_register_cons * simplec = NULL;
-uint8_t simple_elf_tmp[12000];
+uint8_t simple_elf_tmp[250000] __attribute__((at(0x2403E800)));
 xTaskHandle      static_task_handle;
 /* USER CODE BEGIN PFP */
 
@@ -284,9 +284,9 @@ int main(void)
     //uint8_t * simple_elf_tmp =
     //       (uint8_t *)SYSTEM_MALLOC_CALL(12000);
 
-    for (i = 0; i < 12000; i++)
+    for (i = 0; i < 300000; i++)
         simple_elf_tmp[i]= 0x00;
-    HAL_UART_Receive(&huart3, simple_elf_tmp, 12000, 20000);
+    HAL_UART_Receive(&huart3, simple_elf_tmp, 234000, 500000);
     simple_elf_v1 = (Elf32_Ehdr *)simple_elf_tmp;
     /*while (simple_elf_tmp[i] != '0' && simple_elf_tmp[i+1] != 'x')
     {

@@ -117,11 +117,13 @@ CC = $(GCC_PATH)/$(PREFIX)gcc
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
+AR = $(GCC_PATH)/$(PREFIX)ar
 else
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
+AR = $(PREFIX)ar
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -190,44 +192,15 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # link script
 LDSCRIPT = STM32H753ZITx_FLASH.ld
 LDSCRIPT_APP = app.ld
+LDSCRIPT_APPV1 = app_v1.ld
 
 # libraries
-LIBS = -lc -lm -lnosys
-LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-LDFLAGS_APP = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APP) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP).map,--cref -Wl,--gc-sections -nostartfiles -fPIC -shared
-
-# default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
-
-#######################################
-# build the the main system binary
-#######################################
-# list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
-vpath %.c $(sort $(dir $(C_SOURCES)))
-# list of ASM program objects
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
-vpath %.s $(sort $(dir $(ASM_SOURCES)))
-
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
-
-$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
-	$(AS) -c $(CFLAGS) $< -o $@
-
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
-	$(SZ) $@
-	
-$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(HEX) $< $@
-	
-$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(BIN) $< $@
-	
-$(BUILD_DIR):
-	mkdir $@	
+LIBS = -lc -lm -lnosys 
+LIBS_APP = -lc -lm -lnosys
+LIBDIR = ./build
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) -L$(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS_APP = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APP) -L$(LIBDIR) $(LIBS_APP) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP).map,--cref -Wl,--gc-sections -nostartfiles -fPIC -shared
+LDFLAGS_APPV1 = $(MCU) -specs=nano.specs -T$(LDSCRIPT_APPV1) -L$(LIBDIR) $(LIBS_APP) -Wl,-Map=$(BUILD_DIR)/$(TARGET_APP_V1).map,--cref -Wl,--gc-sections -nostartfiles -fPIC -shared
 
 app: $(BUILD_DIR)/$(TARGET_APP).elf $(BUILD_DIR)/$(TARGET_APP).hex $(BUILD_DIR)/$(TARGET_APP).bin $(BUILD_DIR)/$(TARGET_APP).ld 
 
@@ -265,7 +238,7 @@ $(BUILD_DIR)/%.ld: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 appv1: $(BUILD_DIR)/$(TARGET_APP_V1).elf $(BUILD_DIR)/$(TARGET_APP_V1).ld 
  
 #######################################
-# build the the application binary.
+# build the the application binary v1.
 #######################################
 # list of app objects.
 APP_V1_OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_APP_V1_SOURCES:.c=.o)))
@@ -281,8 +254,44 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 	
 $(BUILD_DIR)/$(TARGET_APP_V1).elf:  $(APP_V1_OBJECTS) Makefile
-	$(CC) $(APP_V1_OBJECTS) $(LDFLAGS_APP) -o $@
+	$(CC) $(APP_V1_OBJECTS) $(LDFLAGS_APPV1) -o $@
 	$(SZ) $@
+
+# default action: build all
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/lib$(TARGET).a $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+
+#######################################
+# build the the main system binary
+#######################################
+# list of objects
+OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_SOURCES)))
+# list of ASM program objects
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_SOURCES)))
+
+$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+
+$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
+	$(AS) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
+	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(SZ) $@
+	
+$(BUILD_DIR)/lib$(TARGET).a: $(OBJECTS) Makefile
+	$(AR) rcs  $@ $(OBJECTS)
+	$(SZ) $@
+	
+$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(HEX) $< $@
+	
+$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(BIN) $< $@
+	
+$(BUILD_DIR):
+	mkdir $@	
 	
 #$(BUILD_DIR)/%.ld: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 #	$(HXDMPV1) $< > $@		

@@ -42,7 +42,8 @@ int rtu_requested = 0;
 
 //uint8_t _RTU_DATA_ tst = 'b';
 //uint8_t state __attribute__ ((section (RTU_DATA_SECTION_NAME))) = 'd';
-_RTU_DATA_ uint32_t state = 30;
+//_RTU_DATA_ uint32_t state = 0;
+_RTU_DATA_ uint32_t * state = NULL;
 
 void cpRequestHook(int type)
 {
@@ -61,20 +62,24 @@ typedef void (*p_jumptbl_taskdelay)(uint32_t);
 /* Startup function that creates and runs two FreeRTOS tasks */
 void simple_entry_v1(void *param)
 {
+    vDirectPrintMsg("simplev1 ");
     //p = (uint8_t*)&__RTU_DATA_START;
-
-    p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x20008615|1);
-    jumptbl_logmsg();
-    p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007935|1);
-    jumptbl_taskdelay(2000);
-    state = 30;
+    //state = 30;
+    //p_jumptbl_logmsg jumptbl_logmsg = (p_jumptbl_logmsg)(0x20008615|1);
+    //jumptbl_logmsg();
+    //p_jumptbl_taskdelay jumptbl_taskdelay = (p_jumptbl_taskdelay)(0x08007935|1);
+    //jumptbl_taskdelay(2000);
+    if (state == NULL)
+    {
+        state = app_malloc(10);
+    }
     //state = 'z';
     /* just in case if an infinite loop is somehow omitted in FreeRTOS_Error */
     while (1)
     {
 
-       jumptbl_logmsg();
-       jumptbl_taskdelay(2000);
+       //jumptbl_logmsg();
+       //jumptbl_taskdelay(2000);
 
         if (rtu_requested)
         {

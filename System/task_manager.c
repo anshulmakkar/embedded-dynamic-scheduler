@@ -559,6 +559,29 @@ int task_wait_for_checkpoint(task_register_cons *trc, cp_req_t req_type)
 	}
 
 	return 1;
+}
+
+void *app_malloc(size_t size)
+{
+    task_register_cons *trc =  NULL;
+    void *mem_ptr = NULL;
+    vDirectPrintMsg("app malloc ");
+    //trc = task_get_current_trc();
+
+    //if (trc == NULL)
+    //{
+    //    vDirectPrintMsg("Failed to get current task ID");
+    //    return NULL;
+    //}
+
+    //mem_ptr = SYSTEM_MALLOC_CALL(size);
+    //if (mem_ptr == NULL)
+    //{
+    //    vDirectPrintMsg("Failed to allocate for task");
+    //    return NULL;
+    //}
+    /* TODO: Insert the allocation in tree for tracking */
+    return mem_ptr;
 
 }
 

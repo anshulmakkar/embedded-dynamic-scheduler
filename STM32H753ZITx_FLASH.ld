@@ -188,10 +188,10 @@ SECTIONS
     . = ALIGN(8);
   } >DTCMRAM
 
-  .jumptbl_block 0x20008608 :
+  /* .jumptbl_block 0x20008608 :
   {
     KEEP(*(.jumptbl))
-  }
+  } */
   
   /* Remove information from the standard libraries */
   /DISCARD/ :

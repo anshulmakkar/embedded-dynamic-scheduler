@@ -2,8 +2,7 @@ ENTRY(_start)
 /* start = .;*/
 SECTIONS
 {
-    . = SEGMENT_START("text-segment", 0) + SIZEOF_HEADERS;
-   .text : 
+   .text 0x38000000: 
     {
         *(.text)
     }
