@@ -6,7 +6,7 @@
 2) Ensures high-availability.
 3) Safely update or reconfigure a part of the system at a lower cost.
 4) The granularity aimed here is udpating of independent software modules.
-5) Efficient utilization of bandwidth, specifically when its limited in earth/space communication.
+5) Efficient utilization of bandwidth, specifically when its limited eg in earth/space communication.
 
 ## Runtime Update Process:
 1) Execution of task start.
